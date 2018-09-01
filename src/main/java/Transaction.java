@@ -1,26 +1,26 @@
 public class Transaction {
 
-    private Integer size;
-    private Integer fee;
+    private Double size;
+    private Double fee;
 
-    public Transaction(Integer size, Integer fee) {
+    public Transaction(Double size, Double fee) {
         this.size = size;
         this.fee = fee;
     }
 
-    public Integer getSize() {
+    public Double getSize() {
         return size;
     }
 
-    public void setSize(Integer size) {
+    public void setSize(Double size) {
         this.size = size;
     }
 
-    public Integer getFee() {
+    public Double getFee() {
         return fee;
     }
 
-    public void setFee(Integer fee) {
+    public void setFee(Double fee) {
         this.fee = fee;
     }
 

@@ -1,6 +1,10 @@
-import java.util.*;
-import info.blockchain.api.*;
-import info.blockchain.api.statistics.StatisticsResponse;
+import org.apache.commons.math3.distribution.GammaDistribution;
+
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
 
 public class Simulation {
 
@@ -8,19 +12,27 @@ public class Simulation {
     private static Integer TIME = 0;
     private static Integer FINALTIME;
 
-    private static Integer BLOCKLIMIT = 0;
-    private static Integer EMPTYBLOCK = 0;
+    private static Double BLOCKLIMIT = 0D;
+    private static Double EMPTYBLOCK = 0D;
     private static Integer MAXFEE = 0;
-    private static Integer BLOCK = 0;
+    private static Double BLOCK = 0D;
     private static Integer QUEUES = 0;
 
     private static List<Integer> STLL = new LinkedList<>();
     private static List<Integer> STS = new LinkedList<>();
     private static List<Integer> NT = new LinkedList<>();
 
+    private static HttpClient HTTPCLIENT = new HttpClient();
+
+
+    private static double ALPHAGAMMA = 12.121;
+    private static double BETAGAMMA = 0.20344;
+    private static GammaDistribution TXARRDISTRIBUTION = new GammaDistribution(ALPHAGAMMA, BETAGAMMA);
+
     private static List<Queue<Transaction>> queues = new LinkedList<>();
 
-    public void run(Integer tf, Integer queues, Integer blockLimit) {
+
+    public void run(Integer tf, Integer queues, Double blockLimit) {
 
         FINALTIME = tf;
         BLOCKLIMIT = blockLimit;
@@ -29,7 +41,7 @@ public class Simulation {
         while (TIME < FINALTIME) {
 
             TIME += DELTA;
-            BLOCK = 0;
+            BLOCK = 0D;
 
             processArrival();
 
@@ -93,12 +105,13 @@ public class Simulation {
 
     }
 
-    private Integer feeTx() {
-        return 0;
+    private Double feeTx() {
+        return 0D;
     }
 
-    private Integer sizeTx() {
-        return 0; }
+    private Double sizeTx() {
+        return HTTPCLIENT.getAverageSizeTx();
+    }
 
     private Integer txArr() {
         return 0;
@@ -113,7 +126,7 @@ public class Simulation {
         }
     }
 
-    private void emptyQueue(Queue<Transaction> transactions, Integer blockFreeSpace,  Integer index) {
+    private void emptyQueue(Queue<Transaction> transactions, Double blockFreeSpace,  Integer index) {
 
         while( blockFreeSpace > 0 ) {
 
