@@ -98,7 +98,7 @@ public class Simulation {
     }
 
     private Integer sizeTx() {
-        return new StatisticsResponse().getNumberOfTransactions(); }
+        return 0; }
 
     private Integer txArr() {
         return 0;
