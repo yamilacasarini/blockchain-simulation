@@ -1,9 +1,8 @@
 import org.apache.commons.math3.distribution.GammaDistribution;
+import org.apache.commons.math3.distribution.LogNormalDistribution;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 
 public class Simulation {
@@ -12,33 +11,52 @@ public class Simulation {
     private static Integer TIME = 0;
     private static Integer FINALTIME;
 
-    private static Double BLOCKLIMIT = 0D;
+    private static Double BLOCKLIMIT = 1000000D;
     private static Double EMPTYBLOCK = 0D;
     private static Integer MAXFEE = 0;
     private static Double BLOCK = 0D;
     private static Integer QUEUES = 0;
 
-    private static List<Integer> STLL = new LinkedList<>();
-    private static List<Integer> STS = new LinkedList<>();
-    private static List<Integer> NT = new LinkedList<>();
+    private static List<Integer> STLL = new ArrayList<>();
+    private static List<Integer> STS = new ArrayList<>();
+    private static List<Integer> NT = new ArrayList<>();
+
+    private static Double AVERAGETXSIZE;
 
     private static HttpClient HTTPCLIENT = new HttpClient();
 
 
-    private static double ALPHAGAMMA = 12.121;
-    private static double BETAGAMMA = 0.20344;
-    private static GammaDistribution TXARRDISTRIBUTION = new GammaDistribution(ALPHAGAMMA, BETAGAMMA);
+    private static double SCALEGAMMA = 12.121;
+    private static double SHAPEGAMMA = 0.20344;
+    private static GammaDistribution TXARRDISTRIBUTION = new GammaDistribution(SCALEGAMMA, SHAPEGAMMA);
 
-    private static List<Queue<Transaction>> queues = new LinkedList<>();
+    private static double SCALELOGNORMAL = 0.71902;
+    private static double SHAPELOGNORMAL = 8.5645;
+    private static LogNormalDistribution FEEDISTRIBUTION = new LogNormalDistribution(SCALELOGNORMAL, SHAPELOGNORMAL);
 
+    private static  List<Queue<Transaction>> queues = new ArrayList<>();
 
-    public void run(Integer tf, Integer queues, Double blockLimit) {
+    public void run(Integer tf, Integer queuesLimit) {
 
         FINALTIME = tf;
-        BLOCKLIMIT = blockLimit;
-        QUEUES = queues;
+        QUEUES = queuesLimit;
+        MAXFEE = HTTPCLIENT.getMaxFee();
+        AVERAGETXSIZE = HTTPCLIENT.getAverageSizeTx();
+
+
+        for (int N = 0; N < queuesLimit; N++) {
+            Queue queue = new LinkedList<Transaction>();
+            queues.add(queue);
+
+            STLL.add(0);
+            STS.add(0);
+            NT.add(0);
+        }
+
 
         while (TIME < FINALTIME) {
+
+            System.out.println("TIME: " + TIME);
 
             TIME += DELTA;
             BLOCK = 0D;
@@ -87,34 +105,42 @@ public class Simulation {
         for(int N = 0; N<transactions; N++) {
 
             Transaction tx = new Transaction(sizeTx(), feeTx());
-            putInQueue(tx, MAXFEE/QUEUES);
-            STLL.add(MAXFEE/QUEUES, STLL.get(MAXFEE/QUEUES) + TIME);
+            Integer index = putInQueue(tx, MAXFEE/QUEUES);
+            STLL.add(index, STLL.get(index) + TIME);
 
         }
 
     }
 
-    private void putInQueue(Transaction tx, Integer queueDelta) {
+    private Integer putInQueue(Transaction tx, Integer queueDelta) {
         Integer queuePosition = 0;
+        Integer index = -1;
 
-        while( tx.getFee() > queuePosition ) {
+        while( tx.getFee() >= queuePosition ) {
             queuePosition += queueDelta;
+            index ++;
         }
 
-        queues.get(queuePosition/queueDelta).add(tx);
+        if(index >= queues.size()) {
+            index = queues.size()- 1;
+        }
+
+        queues.get(index).add(tx);
+
+        return index;
 
     }
 
     private Double feeTx() {
-        return 0D;
+        return FEEDISTRIBUTION.inverseCumulativeProbability(random());
     }
 
     private Double sizeTx() {
-        return HTTPCLIENT.getAverageSizeTx();
+        return AVERAGETXSIZE;
     }
 
     private Integer txArr() {
-        return 0;
+        return (int) TXARRDISTRIBUTION.inverseCumulativeProbability(random()) * 1000;
     }
 
     private void processExits() {
@@ -142,6 +168,15 @@ public class Simulation {
             }
 
         }
+
+    }
+
+    private double random() {
+
+        int rangeMin = 0;
+        int rangeMax = 1;
+
+        return ThreadLocalRandom.current().nextDouble(rangeMin, rangeMax);
 
     }
 

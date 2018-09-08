@@ -1,3 +1,4 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
@@ -14,6 +15,7 @@ import java.io.InputStreamReader;
 public class HttpClient {
 
     private org.apache.http.client.HttpClient client;
+    ObjectMapper mapper;
 
     RequestConfig requestConfig = RequestConfig.custom()
             .setSocketTimeout(20000)
@@ -31,6 +33,7 @@ public class HttpClient {
         connManager.setMaxPerRoute(new HttpRoute(host), 15);
 
         client = HttpClientBuilder.create().setConnectionManager(connManager).build();
+        mapper = new ObjectMapper();
 
     }
 
@@ -44,7 +47,26 @@ public class HttpClient {
             return Double.parseDouble(readResponseToString(response));
         }
 
-        throw new RuntimeException();
+        return 200D;
+    }
+
+    public Integer getMaxFee() {
+        String url = "https://api.blockcypher.com/v1/btc/main";
+
+        Integer maxFee = 0;
+
+        HttpGet request = new HttpGet(url);
+        HttpResponse response = get(request);
+
+        if(response != null) {
+            try {
+                maxFee = mapper.readValue(readResponseToString(response), FeeResponse.class).getHigh_fee_per_kb();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return maxFee;
     }
 
     public HttpResponse get(HttpGet request) {
