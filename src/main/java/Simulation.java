@@ -116,9 +116,7 @@ public class Simulation {
         Integer queuePosition = 0;
         Integer index = -1;
 
-        Double fee = feeTx();
-
-        while( fee >= queuePosition ) {
+        while( feeTx() >= queuePosition ) {
             queuePosition += queueDelta;
             index ++;
         }
