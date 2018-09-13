@@ -2,7 +2,7 @@ import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 
 
 public class Simulation {
@@ -16,6 +16,8 @@ public class Simulation {
     private static Integer MAXFEE = 0;
     private static Double BLOCK = 0D;
     private static Integer QUEUES = 0;
+
+    private static Random RANDOM = new Random();
 
     private static List<Integer> STLL = new ArrayList<>();
     private static List<Integer> STS = new ArrayList<>();
@@ -34,7 +36,7 @@ public class Simulation {
     private static double SHAPELOGNORMAL = 8.5645;
     private static LogNormalDistribution FEEDISTRIBUTION = new LogNormalDistribution(SCALELOGNORMAL, SHAPELOGNORMAL);
 
-    private static  List<Queue<Transaction>> queues = new ArrayList<>();
+    private static  List<Queue<Double>> queues = new ArrayList<>();
 
     public void run(Integer tf, Integer queuesLimit) {
 
@@ -42,10 +44,11 @@ public class Simulation {
         QUEUES = queuesLimit;
         MAXFEE = HTTPCLIENT.getMaxFee();
         AVERAGETXSIZE = HTTPCLIENT.getAverageSizeTx();
+        RANDOM = new Random();
 
 
         for (int N = 0; N < queuesLimit; N++) {
-            Queue queue = new LinkedList<Transaction>();
+            Queue queue = new LinkedList<String>();
             queues.add(queue);
 
             STLL.add(0);
@@ -103,20 +106,19 @@ public class Simulation {
         Integer transactions = txArr();
 
         for(int N = 0; N<transactions; N++) {
-
-            Transaction tx = new Transaction(sizeTx(), feeTx());
-            Integer index = putInQueue(tx, MAXFEE/QUEUES);
-            STLL.add(index, STLL.get(index) + TIME);
-
+            Integer index = putInQueue(MAXFEE/QUEUES);
+            STLL.set(index, STLL.get(index) + TIME);
         }
 
     }
 
-    private Integer putInQueue(Transaction tx, Integer queueDelta) {
+    private Integer putInQueue(Integer queueDelta) {
         Integer queuePosition = 0;
         Integer index = -1;
 
-        while( tx.getFee() >= queuePosition ) {
+        Double fee = feeTx();
+
+        while( fee >= queuePosition ) {
             queuePosition += queueDelta;
             index ++;
         }
@@ -125,13 +127,13 @@ public class Simulation {
             index = queues.size()- 1;
         }
 
-        queues.get(index).add(tx);
+        queues.get(index).add(1D);
 
         return index;
 
     }
 
-    private Double feeTx() {
+    private static Double feeTx() {
         return FEEDISTRIBUTION.inverseCumulativeProbability(random());
     }
 
@@ -152,16 +154,16 @@ public class Simulation {
         }
     }
 
-    private void emptyQueue(Queue<Transaction> transactions, Double blockFreeSpace,  Integer index) {
+    private void emptyQueue(Queue<Double> transactions, Double blockFreeSpace,  Integer index) {
 
         while( blockFreeSpace > 0 ) {
 
-            if(transactions.peek() != null && transactions.peek().getSize() <= blockFreeSpace) {
-            Transaction tx = transactions.remove();
-            BLOCK = tx.getSize();
-            blockFreeSpace -= tx.getSize();
-            STS.add(index, STS.get(index) + TIME);
-            NT.add(index, NT.get(index) + 1);
+            if(transactions.peek() != null && sizeTx() <= blockFreeSpace) {
+            transactions.remove();
+            BLOCK += sizeTx();
+            blockFreeSpace -= sizeTx();
+            STS.set(index, STS.get(index) + TIME);
+            NT.set(index, NT.get(index) + 1);
             }
             else {
                 break;
@@ -171,12 +173,11 @@ public class Simulation {
 
     }
 
-    private double random() {
+    private static double random() {
 
-        int rangeMin = 0;
-        int rangeMax = 1;
-
-        return ThreadLocalRandom.current().nextDouble(rangeMin, rangeMax);
+        double rangeMin = 0D;
+        double rangeMax = 1D;
+        return rangeMin + (rangeMax - rangeMin) * RANDOM.nextDouble();
 
     }
 
