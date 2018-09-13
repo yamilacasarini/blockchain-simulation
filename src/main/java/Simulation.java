@@ -79,6 +79,7 @@ public class Simulation {
     private void emptySystem() {
 
         while(!areQueuesEmpty()) {
+            BLOCK = 0D;
             processExits();
         }
 
@@ -93,8 +94,12 @@ public class Simulation {
         System.out.println("--------------RESULTADOS-----------------");
 
         for(int N = 0; N < QUEUES; N++) {
-            Integer PPS = STS.get(N) - STLL.get(N) / NT.get(N);
-            System.out.println("El promedio de permanencia en la cola " + N + " es de: " + PPS);
+            if(NT.get(N) != 0) {
+                Integer PPS = STS.get(N) - STLL.get(N) / NT.get(N);
+                System.out.println("El promedio de permanencia en la cola " + N + " es de: " + PPS);
+            } else {
+                System.out.println("La cola " + N + " no tuvo transacciones");
+            }
         }
 
         System.out.println("El bloque no estuvo lleno al 100% " + EMPTYBLOCK + " veces");
