@@ -1,6 +1,7 @@
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 
+import java.security.interfaces.DSAPublicKey;
 import java.util.*;
 import java.util.Random;
 
@@ -28,8 +29,8 @@ public class Simulation {
     private static HttpClient HTTPCLIENT = new HttpClient();
 
 
-    private static double SCALEGAMMA = 12.121;
-    private static double SHAPEGAMMA = 0.20344;
+    private static double SCALEGAMMA = 16.96;
+    private static double SHAPEGAMMA = 0.2344;
     private static GammaDistribution TXARRDISTRIBUTION = new GammaDistribution(SCALEGAMMA, SHAPEGAMMA);
 
     private static double SCALELOGNORMAL = 0.71902;
@@ -42,8 +43,8 @@ public class Simulation {
 
         FINALTIME = tf;
         QUEUES = queuesLimit;
-        MAXFEE = HTTPCLIENT.getMaxFee();
         AVERAGETXSIZE = HTTPCLIENT.getAverageSizeTx();
+        MAXFEE = (HTTPCLIENT.getMaxFee() / 1024) * AVERAGETXSIZE.intValue();
         RANDOM = new Random();
 
 
@@ -145,7 +146,7 @@ public class Simulation {
     }
 
     private Integer txArr() {
-        return (int) TXARRDISTRIBUTION.inverseCumulativeProbability(random()) * 1000;
+        return (int) TXARRDISTRIBUTION.inverseCumulativeProbability(random()) * 600;
     }
 
     private void processExits() {
