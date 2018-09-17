@@ -3,7 +3,7 @@ public class Transaction {
     private Double size;
     private Double fee;
 
-    public Transaction(Double size, Double fee) {
+    public Transaction(int i, Double size, Double fee) {
         this.size = size;
         this.fee = fee;
     }
