@@ -256,7 +256,7 @@ public class Simulation {
             }
             writer.write((i+1)+"\t"+String.valueOf(PPS.get(i))+"\t"+ POT.get(i) +"\n");
         }
-        
+
         LOGGER.info("SIMULATION NUMBER: " + 1 + " | LINES: "+ QUEUES + " | FINAL TIME: "+ FINALTIME );
         for (int i = 0; i < QUEUES; i++) {
             LOGGER.info("Waiting time in the line:" + (i + 1) + " = " + PPS.get(i) + "\n" + "Percentage of transactions in " +
@@ -266,6 +266,7 @@ public class Simulation {
         writer.close();
 
     }
+    
 
     private static void initialize(List lista,int valorInicial,int cantidad){
         for (int i = 0; i < cantidad; i++){
