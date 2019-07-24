@@ -269,6 +269,7 @@ public class Simulation {
     private static void initialize(List lista,int valorInicial,int cantidad){
         for (int i = 0; i < cantidad; i++){
             lista.add(i, valorInicial);
+            
         }
     }
 
